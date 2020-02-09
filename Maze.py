@@ -25,12 +25,13 @@ class Wall:
         self.second_cell = second_cell
         
         #weight of each edge, i.e. how likely this wall is to be selected from the list of active walls
-        self.weight = math.sqrt(first_cell[0]**2+first_cell[1]**2)*first_cell[1]**20 + math.sqrt(first_cell[0]**2+first_cell[1]**2)*first_cell[0]**20 + math.sqrt(first_cell[0]**2+first_cell[1]**2)*second_cell[1]**20 + math.sqrt(first_cell[0]**2+first_cell[1]**2)*second_cell[0]**20
+        self.weight = 1 #math.sqrt(first_cell[0]**2+first_cell[1]**2)*first_cell[1]**20 + math.sqrt(first_cell[0]**2+first_cell[1]**2)*first_cell[0]**20 + math.sqrt(first_cell[0]**2+first_cell[1]**2)*second_cell[1]**20 + math.sqrt(first_cell[0]**2+first_cell[1]**2)*second_cell[0]**20
+        
         #orientation is 0 for horizontal, 1 for vertical wall
         self.orientation = abs(first_cell[0] - second_cell[0])
     
     #unused function but I kept it in because you never know, but just prints all info about a wall
-    def printWall(self):
+    def print_wall(self):
         print("My first cell is", self.first_cell)
         print("My second cell is", self.second_cell)
         if self.orientation == 0:
@@ -39,10 +40,8 @@ class Wall:
             print("I am a vertical wall")
     
     #drawn a wall object. takes passage as an argument, and draws it in blue/background color if passage to make it look like there's no wall
-    def drawWall(self, canvas, passage):
-        color = "red"
+    def drawWall(self, canvas, color, passage):
         if passage == 1:
-            color = "blue"
             #determine if horizontal or vertical
             if self.orientation == 1:
                 canvas.create_rectangle(self.second_cell[0]*CELL_SIZE-LINE_THICKNESS/2, self.second_cell[1]*CELL_SIZE+LINE_THICKNESS/2+1,self.second_cell[0]*CELL_SIZE+LINE_THICKNESS/2,  (self.second_cell[1]+1)*CELL_SIZE-LINE_THICKNESS/2-1, fill = color, outline = color)
@@ -53,6 +52,10 @@ class Wall:
                 canvas.create_rectangle(self.second_cell[0]*CELL_SIZE-LINE_THICKNESS/2, self.second_cell[1]*CELL_SIZE-LINE_THICKNESS/2+1,self.second_cell[0]*CELL_SIZE+LINE_THICKNESS/2,  (self.second_cell[1]+1)*CELL_SIZE+LINE_THICKNESS/2, fill = color, outline = color)
             else: #it's horizontal
                 canvas.create_rectangle(self.first_cell[0]*CELL_SIZE-LINE_THICKNESS/2, self.second_cell[1]*CELL_SIZE-LINE_THICKNESS/2+1, (self.first_cell[0]+1)*CELL_SIZE+LINE_THICKNESS/2, self.second_cell[1]*CELL_SIZE+LINE_THICKNESS/2+1, fill = color, outline=color)
+    #override equality operator
+    def __eq__(self, other):
+        if isinstance(i, Wall) and other != None:
+            return (self.orientation == other.orientation and self.first_cell[0] == other.first_cell[0] and self.first_cell[1] == other.first_cell[1] and self.second_cell[1] == other.second_cell[1] and self.second_cell[0] == other.second_cell[0])
 
 #makes the actual writable image using cv2 and np by imitating what TK does, just called at the end to generate final image
 def printPicture(walls):
@@ -106,7 +109,7 @@ class Cell:
     def printCell(self):
         print("This is the cell", (self.xpos, self.ypos))
 
-def drawMaze(canvas, active_walls, passage_walls, cells, wait = 0):
+def drawMaze(canvas, active_walls, passage_walls, cells, wait = 0, active_wall = None):
     for i in range(GRID_HEIGHT):
         canvas.create_rectangle(0,i*CELL_SIZE, GRID_WIDTH*CELL_SIZE, i*CELL_SIZE, fill = "black", width = LINE_THICKNESS)
         
@@ -117,12 +120,16 @@ def drawMaze(canvas, active_walls, passage_walls, cells, wait = 0):
     for i in cells:
         canvas.create_rectangle((i[0])*CELL_SIZE+LINE_THICKNESS/2, (i[1])*CELL_SIZE+LINE_THICKNESS/2,((i[0])+1)*CELL_SIZE-LINE_THICKNESS/2, ((i[1])+1)*CELL_SIZE-LINE_THICKNESS/2, fill = "blue")
     
-        
+            
     for i in passage_walls:
-        i.drawWall(canvas, 1)
-    
+        i.drawWall(canvas, 'blue', 1)
+        
     for i in active_walls:
-        i.drawWall(canvas,0)
+        i.drawWall(canvas,'red',0)
+        
+    if active_wall != None:
+        active_wall.drawWall(canvas, 'magenta', 0)
+
     
     time.sleep(wait)
     tk.update()
@@ -162,6 +169,7 @@ for count in range(10):
             total_weight += w.weight
         active_wall = active_walls[randint(0,len(active_walls)-1)]
         
+        #randomly pick wall from list of active walls, with probability based on weights
         n = random.random()*total_weight
         lower_weight = 0
         upper_weight = 0
@@ -172,27 +180,32 @@ for count in range(10):
                 break
             lower_weight = upper_weight
         active_wall = active_walls[target]
-
+        
+        #
         if active_wall.first_cell not in maze_cells:
-            passage_walls.append(active_wall)
             maze_cells.append(active_wall.first_cell)
             added_cell = Cell(active_wall.first_cell[0], active_wall.first_cell[1])
             for i in added_cell.Walls:
+                #careful not to re-add the cell we're going to remove!
                 active_walls.append(i)
-            active_walls = list(set(active_walls)) 
+            passage_walls.append(active_wall)
+
             
         elif active_wall.second_cell not in maze_cells:
-            passage_walls.append(active_wall)
             maze_cells.append(active_wall.second_cell)
             added_cell = Cell(active_wall.second_cell[0], active_wall.second_cell[1])
             for i in added_cell.Walls:
                 active_walls.append(i)
-            active_walls = list(set(active_walls)) 
-            
+            passage_walls.append(active_wall)
+
         active_walls.remove(active_wall)
         
-        drawMaze(canvas,active_walls, passage_walls, maze_cells, wait = .0)
-        
+        #remove potential remaining duplicates
+        for i in active_walls:
+            if active_wall == i:
+                active_walls.remove(i)
+        drawMaze(canvas,active_walls, passage_walls, maze_cells, wait = 0, active_wall = active_wall)
+    drawMaze(canvas,active_walls, passage_walls, maze_cells, wait = 5)
     output = printPicture(passage_walls)
     tk.destroy()
     #if uncommented, writes each finished maze to a PNG image
