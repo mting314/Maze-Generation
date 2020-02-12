@@ -21,7 +21,17 @@ The way to adapt this to a maze becomes almost obvious once you consider the nat
 4. If a cell was added, add its walls to the list of active walls
 5. Repeat steps 3 and 4 until the list of active walls is empty
 
-Now you might notice the biggest difference here: there are no weights on these walls. That's why we have to approach this process a bit differently. We don't know which edge (wall) is the one we should add to our maze, so we have to just pick one randomly every time, which is actually what Prim's algorithm would end up doing in the case of a tie. So in this way, we can just consider each wall in the maze to be an edge of the same "weight". This random picking also helps each maze look different from the last. Also, I make the algorithm terminate when the list of walls is empty just because it's easier to detect when this happens versus trying to figure out the normal equivalent, which would be when every cell has been visited.
+Using this algorithm, these are some examples of mazes that I get.
+
+![](Images/Normal%20Weight/example3.png)  |  ![](Images/Normal%20Weight/example4.png)
+:-------------------------:|:-------------------------:
+![](Images/Normal%20Weight/example1.png)  |  ![](Images/Normal%20Weight/example2.png)
+
+I think they look kinda pretty.
+
+One important point to note for why this algorithm even looked like it worked in the first place. Prim's algorithm is guaranteed to spit out the **minimal spanning tree**. If you don't know graph theory, don't worry about the details. Basically, this just ensures that not only is there a solution or path from any cell to any cell in the maze, but importantly, a unique one.
+
+Now you might notice the biggest difference here between my algorithm and what Prim's algorithm does: there are no weights on these walls. That's why we have to approach this process a bit differently. We don't know which edge (wall) is the one we should add to our maze, so we have to just pick one randomly every time, which is actually what Prim's algorithm would end up doing in the case of a tie. So in this way, we can just consider each wall in the maze to be an edge of the same "weight". This random picking also helps each maze look different from the last. Also, I make the algorithm terminate when the list of walls is empty just because it's easier to detect when this happens versus trying to figure out the normal equivalent, which would be when every cell has been visited.
 
 However, this did get me thinking: we still CAN put weights on these walls if we want! For example, why don't we try assigning weights not randomly, but in a specific idea in mind? This would actually be a pretty simple addition, just adding a weight variable within the wall class that is based on it's position in the maze, so I gave it a try using a simple Euclidian-esque formula that gave much larger weights to walls farther from the top-left origin.
 
