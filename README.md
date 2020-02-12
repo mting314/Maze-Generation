@@ -1,7 +1,7 @@
 # Maze Generation
  Generating a maze with Prim's Algorithm
 
-So I was at maze solving algorithms and how they work just out of curiosity, and stumbled across something a bit more interesting to me that I realized would be pretty fun to program up. It was maze generating algorithms, which never really crossed my mind as something that actually needed to be implemented as drawing mazes manually doesn't seem to be much fun.
+So one day a friend was doodling mazes in class, and gave one to me  at maze solving algorithms and how they work just out of curiosity, and stumbled across something a bit more interesting to me that I realized would be pretty fun to program up. It was maze generating algorithms, which never really crossed my mind as something that actually needed to be implemented as drawing mazes manually doesn't seem to be much fun.
 
 So the way I implemented this was based on another algorithm called Prim's algorithm that I actually learned about in my discrete structures class at school. It takes in a simple graph with weighted edges, and spits out its "minimal spanning tree", which is just the tree which has lowest total weight that reaches every vertex within the original graph. The algorithm goes something like this:
 
