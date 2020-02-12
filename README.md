@@ -41,3 +41,6 @@ Because edges with higher weight are more likely to be picked by definition, and
 :-------------------------:|:-------------------------:
 ![](Images/Euclidian%20Weight/example1.png)  |  ![](Images/Euclidian%20Weight/example2.png)
 
+And finally, here is a full demonstration with normal weights. (I decided to add a depth first search solver just to make it a bit more satisfying)
+
+[![](Images/Thumbnail.png)](https://youtu.be/SMEaBl9upaA)
